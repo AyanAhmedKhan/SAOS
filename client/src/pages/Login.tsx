@@ -171,6 +171,23 @@ export default function Login() {
               {isLoading ? 'Please wait...' : (isRegisterMode ? 'Create Account' : 'Sign In')}
             </Button>
 
+            {/* Clear localStorage button for debugging */}
+            <Button 
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                localStorage.clear();
+                toast({
+                  title: 'Browser data cleared',
+                  description: 'Please try logging in again.'
+                });
+              }}
+              data-testid="button-clear-data"
+            >
+              Clear Stored Data
+            </Button>
+
             <div className="text-center pt-4">
               <button
                 type="button"
