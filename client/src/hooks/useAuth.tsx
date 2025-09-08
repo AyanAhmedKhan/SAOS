@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { api } from '@/lib/api';
 import type { User } from '@/types';
 
@@ -21,28 +21,32 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
-      if (token) {
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
         try {
+          // Set token first to ensure API calls include authorization
+          setToken(storedToken);
           const userData = await api.getCurrentUser();
           setUser(userData);
         } catch (error) {
           console.error('Failed to get current user:', error);
           localStorage.removeItem('token');
           setToken(null);
+          setUser(null);
         }
       }
       setIsLoading(false);
     };
 
     initAuth();
-  }, [token]);
+  }, []);
 
   const login = async (username: string, password: string) => {
     try {
