@@ -1,0 +1,69 @@
+Build a production-ish prototype of a Farm Management System (FMS) + Real-time IoT Dashboard with Django backend, Django REST Framework, Django Channels (WebSocket), MQTT ingestion option, Celery tasks, PostgreSQL, Redis, and a React + Tailwind frontend. The backend must provide both random synthetic data generation (for local demo/testing) and an MQTT ingestion pipeline for real devices. The app must include advanced farm-management modules (Crop Calendar, Fertilizer/Pesticide advisory, Task Management), Smart Analytics & Insights (WEI, seasonal reports, cost-benefit analysis, heatmaps), customizable alerts & multi-channel notifications (SMS/WhatsApp/Push/Email - stubbed / pluggable), geospatial integration (basic polygon farms + satellite placeholder), admin/cooperative multi-farm views, and sustainability modules (carbon footprint, solar pump optimizer, carbon credit integration stub).Must-have functional requirements:
+
+IoT ingestion
+
+Two ingestion modes:
+
+Random data generator management command / API to simulate IoT sensors per farm/plot (pH, TDS, soil_moisture, water_depth, water_flow, rainfall, temperature, humidity).
+
+MQTT subscriber (paho-mqtt) service that subscribes to topic farm/{farm_id}/device/{device_id}/sensor/{sensor} and ingests messages as JSON, validates and stores to DB and publishes to Channels group for WebSocket clients.
+
+Realtime
+
+Django Channels WebSocket endpoint /ws/farms/{farm_id}/sensors/ that streams sensor updates (with authentication).
+
+REST API
+
+CRUD for Farm, Plot, Device, SensorData, CropCalendarEntry, Task, Advisory, UserProfile.
+
+Endpoints for analytics: /api/analytics/wei/, /api/analytics/seasonal-report/, /api/analytics/heatmap/, /api/analytics/cost-benefit/.
+
+Farm Management
+
+Crop calendar CRUD with reminders and stage-wise irrigation recommendations (store ideal moisture/TDS ranges per crop stage).
+
+Fertilizer/pesticide advisory engine: given crop + soil sensors recommends dose ranges (rule-based for prototype).
+
+Task management: schedule tasks with due date, reminders and status.
+
+Insights & analytics
+
+Water Efficiency Index (WEI) per plot: function of water used (from water_flow) vs. observed plant growth proxy (use sensor/historical yield input).
+
+Seasonal reports comparing metrics across seasons (mock earlier seasons using seeded data).
+
+Heatmaps: return grid/geo-aggregated soil moisture values for a farm (API returns numeric grid + metadata).
+
+Cost-benefit: compare baseline irrigation schedule vs. optimized schedule (mocked calculation).
+
+Predictive suggestion: simple linear extrapolation or moving-average-based “next irrigation time”.
+
+Notifications
+
+Alert engine: user-configurable thresholds; actions include push (websocket), email (console backend for demo), and webhook (for SMS/WhatsApp integration). Provide adapters/stubs for Twilio/WhatsApp/SMTP.
+
+Admin / Cooperative features
+
+Multi-farm dashboard for NGOs/cooperatives with aggregated WEI, water availability, and farmer performance index.
+
+Sustainability
+
+Carbon footprint tracker estimating CO₂ saved by reduced pumping (use a simple kWh → kgCO₂ formula), solar pump optimization module skeleton.
+
+Security
+
+Token-based API auth (Simple JWT) + session auth for admin; role-based permissions (farmer, agronomist, coop_admin).
+
+UX
+
+React dashboard with:
+
+Real-time gauges & line charts for sensors (pH, TDS, Water Depth, Water Flow, Soil Moisture, Rain).
+
+Grid layout as in the reference image but modern/futuristic (dark theme + neon accents).
+
+Farm map view to show heatmaps.
+
+Crop calendar UI, tasks list, advisories, reports pages.
+
+Realtime WebSocket connection and REST fallback.Design a highly modern and futuristic IoT Agriculture Dashboard with an advanced user interface. The dashboard should monitor and control smart farming equipment and display the following parameters in real-time: pH Sensor, TDS Sensor, Water Depth Sensor, Water Flow Sensor, Rain Detection, Soil Moisture, and Actuator Controls (Pump 1, Pump 2, Pump 3, Humidifier). Use sleek toggles for actuator controls and futuristic gauges for sensor readings. Include real-time line charts and donut gauges for each sensor, with glowing effects, glassmorphism panels, and neon accent colors. The layout should be grid-based, clean, and responsive. Add AI-driven insights such as 'Soil moisture is optimal for irrigation' or 'TDS levels too high – consider dilution'. Integrate trend visualizations, anomaly detection highlights, and predictive graphs for future soil and water conditions. The overall look should be modern, futuristic, and intuitive, using a dark theme with vibrant accent highlights (green, blue, and orange).
