@@ -85,6 +85,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: hashedPassword
       });
 
+      console.log('User created:', user.id);
+
+      // Create a demo farm for new users
+      try {
+        const demoFarm = await storage.createFarm({
+          name: 'Demo Smart Farm',
+          location: 'California, USA',
+          area: 15.2,
+          ownerId: user.id,
+          coordinates: {
+            type: 'Polygon',
+            coordinates: [[[0,0],[1,0],[1,1],[0,1],[0,0]]]
+          }
+        });
+
+        console.log('Demo farm created:', demoFarm.id);
+
+      // Create demo plots
+      const plot1 = await storage.createPlot({
+        name: 'North Field',
+        farmId: demoFarm.id,
+        area: 7.5,
+        soilType: 'Loamy',
+        coordinates: {
+          type: 'Polygon',
+          coordinates: [[[0,0],[0.5,0],[0.5,1],[0,1],[0,0]]]
+        }
+      });
+
+      const plot2 = await storage.createPlot({
+        name: 'South Field',
+        farmId: demoFarm.id,
+        area: 7.7,
+        soilType: 'Clay',
+        coordinates: {
+          type: 'Polygon',
+          coordinates: [[[0.5,0],[1,0],[1,1],[0.5,1],[0.5,0]]]
+        }
+      });
+
+      // Create demo sensor devices
+      const sensorDevice = await storage.createDevice({
+        name: 'Multi-Sensor Hub Alpha',
+        type: 'sensor',
+        farmId: demoFarm.id,
+        plotId: plot1.id,
+        status: 'active',
+        location: { lat: 37.7749, lng: -122.4194 },
+        config: { model: 'SensorHub-Pro', version: '2.1' }
+      });
+
+      const sensorDevice2 = await storage.createDevice({
+        name: 'Weather Station Beta',
+        type: 'sensor',
+        farmId: demoFarm.id,
+        plotId: plot2.id,
+        status: 'active',
+        location: { lat: 37.7750, lng: -122.4195 },
+        config: { model: 'WeatherPro-X1', version: '1.8' }
+      });
+
+      // Create demo actuator device
+      const actuatorDevice = await storage.createDevice({
+        name: 'Smart Irrigation Controller',
+        type: 'actuator',
+        farmId: demoFarm.id,
+        plotId: plot1.id,
+        status: 'active',
+        location: { lat: 37.7751, lng: -122.4196 },
+        config: { pumps: 3, humidifier: 1, zones: 4 }
+      });
+
+        // Generate initial sensor data for demo
+        await dataGenerator.generateSensorData(demoFarm.id);
+
+        // Create demo tasks
+        await storage.createTask({
+          title: 'Check irrigation system',
+          description: 'Inspect all drip lines and sprinkler heads for clogs or damage',
+          assignedTo: user.id,
+          farmId: demoFarm.id,
+          plotId: plot1.id,
+          status: 'pending',
+          priority: 'medium',
+          dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) // 2 days from now
+        });
+
+        await storage.createTask({
+          title: 'Soil pH testing',
+          description: 'Take soil samples and test pH levels across both fields',
+          assignedTo: user.id,
+          farmId: demoFarm.id,
+          status: 'pending',
+          priority: 'high',
+          dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000) // 1 day from now
+        });
+
+        await storage.createTask({
+          title: 'Fertilizer application',
+          description: 'Apply nitrogen-rich fertilizer to North Field based on soil test results',
+          assignedTo: user.id,
+          farmId: demoFarm.id,
+          plotId: plot1.id,
+          status: 'pending',
+          priority: 'low',
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        });
+
+        // Create demo alert thresholds
+        await storage.createAlertThreshold({
+          farmId: demoFarm.id,
+          sensorType: 'soil_moisture',
+          minValue: 30,
+          maxValue: 85,
+          severity: 'medium',
+          isActive: true
+        });
+
+        await storage.createAlertThreshold({
+          farmId: demoFarm.id,
+          sensorType: 'ph',
+          minValue: 6.0,
+          maxValue: 7.5,
+          severity: 'high',
+          isActive: true
+        });
+
+        console.log('Demo farm setup completed successfully');
+      } catch (demoError) {
+        console.error('Failed to create demo farm:', demoError);
+        // Continue with user registration even if demo farm creation fails
+      }
+
       const token = jwt.sign(
         { userId: user.id, role: user.role },
         JWT_SECRET,
