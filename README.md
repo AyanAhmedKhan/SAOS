@@ -1,4 +1,4 @@
-# 🌱 FarmMonitor - Smart Agriculture IoT Platform
+# 🌱 SAOS - Smart Agriculture IoT Platform
 
 A modern, full-stack IoT platform for precision agriculture that enables farmers to monitor and control their farming operations through real-time sensor data, automated systems, and intelligent analytics.
 
