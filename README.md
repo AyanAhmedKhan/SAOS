@@ -117,6 +117,8 @@ FarmMonitor/
 │   ├── db.ts             # Database connection
 │   ├── storage.ts        # Data access layer
 │   └── services/         # Business logic services
+├── firmware/             # ESP32 field-node firmware (MQTT)
+├── ai/                   # AI module (crop health, moisture forecast, irrigation)
 ├── shared/               # Shared code between client/server
 │   └── schema.ts         # Database schema and types
 ├── package.json          # Dependencies and scripts
@@ -209,6 +211,38 @@ farm/{farmId}/device/{deviceId}/actuator/{actuatorType}/command
 - **Humidifiers** - Environmental humidity control
 - **Valves** - Water flow control
 - **Fans** - Ventilation control
+
+## 📟 ESP32 Field Node Firmware
+
+`firmware/saos_field_node.ino` runs on an ESP32 and talks to SAOS over the MQTT topics above.
+
+- Publishes soil moisture, pH, TDS, temperature, humidity, rainfall, water flow and tank level every 30 s
+  to `farm/{farmId}/device/{deviceId}/sensor/{type}` as `{"value": .., "unit": ..}`
+- Subscribes to `farm/{farmId}/device/{deviceId}/actuator/+/command` and switches pump1-3 / humidifier relays,
+  then reports the new state on `farm/{farmId}/device/{deviceId}/actuator/{type}`
+- Fail-safe: if no command arrives for 10 minutes and soil moisture is below 25 %, it irrigates locally up to 40 %
+
+Libraries: PubSubClient, ArduinoJson, DHT sensor library. Set the Wi-Fi details, broker IP and the farm /
+device IDs from the SAOS database before flashing (Arduino IDE will place the sketch in its own folder).
+
+## 🤖 AI Module
+
+`ai/ai_module.py` adds the predictive layer:
+
+- **Predictive water management** - FAO-56 root-zone water balance with Hargreaves ET0 and tomato crop
+  coefficients; compares a fixed schedule, a sensor-threshold rule and the AI predictive rule
+- **Soil-moisture forecast** - Gradient Boosting model that predicts next-day soil moisture
+- **Crop-health classifier** - Random Forest that labels readings as Healthy, Water stress, Heat stress,
+  pH imbalance, Nutrient deficiency or Disease risk
+
+```bash
+cd ai
+pip install -r requirements.txt
+python ai_module.py      # prints the metrics and saves three charts
+```
+
+The models are trained on simulated seasons and readings; retrain them on data logged by real nodes before
+using them in the field.
 
 ## 🎯 User Roles
 
